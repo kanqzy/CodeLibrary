@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<deploy-config>
+    <base>
+        <property name="webDir">E:\holiday\eclipse\workspace\exercise\web\WebContent</property>
+        <property name="deployDir">E:\holiday\eclipse\workspace\exercise\apache-tomcat-8.5.51\webapps\web</property>
+    </base>
+    <extend able="true">        
+        <property name="init">true</property>
+    </extend>
+</deploy-config>

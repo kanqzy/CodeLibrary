@@ -1,0 +1,106 @@
+package com;
+
+import java.util.*;
+import java.io.File;
+
+public class ProjectMaker {
+	String execPath;
+	Config config;
+
+	public ProjectMaker(String execPath, Config config) {
+		this.execPath = execPath;
+		this.config = config;
+	}
+
+	public void make() throws Exception {
+		String templateDir = getTemplateDir();
+		String destDir = getDestRootDir();
+		File dest = new File(destDir);
+		if (dest.exists())
+			dest.delete();		
+		FileUtil.copy(templateDir, destDir);
+		// 替换文件名
+		overwrite();
+		fillProject();
+		System.out.println("project make finish ...");
+	}
+
+	public void fillProject() throws Exception {
+		ProjectType type = config.type;
+		ProjectStructureMap structureMap = config.structureMap;
+		FileUtil.copy(structureMap.src, getDestPath(ProjectStructureType.src));
+		FileUtil.copy(structureMap.lib, getDestPath(ProjectStructureType.lib));
+		if (type == ProjectType.web) {
+			FileUtil.copy(structureMap.webContent, getDestPath(ProjectStructureType.webContent));
+			FileUtil.copy(structureMap.webInfo, getDestPath(ProjectStructureType.webInfo));
+		}
+	}
+
+	public void overwrite() throws Exception {
+		ProjectType type = config.type;
+		String destRootDir = getDestRootDir();
+		List<String> replaceFileNames = new ArrayList<>();
+		replaceFileNames.add(destRootDir + "\\" + ".project");
+		if (type == ProjectType.web) {
+			replaceFileNames.add(destRootDir + "\\" + ".settings\\org.eclipse.wst.common.component");
+			replaceFileNames.add(destRootDir + "\\" + "WebContent\\WEB-INF\\web.xml");
+		}
+		for (String fileName : replaceFileNames) {
+			String content = FileUtil.read(fileName);
+			content = content.replace(type.toString() + "-model", config.name);
+			FileUtil.write(fileName, content);
+		}
+	}
+
+	public String getDestRootDir() {
+		return config.destDir + "\\" + config.name;
+	}
+
+	public String getDestPath(ProjectStructureType type) {
+		String destDir = getDestRootDir();
+		switch (type) {
+			case src:
+				return destDir + "\\" + "src";
+			case lib:
+				return destDir + "\\" + "WebContent\\WEB-INF\\lib";
+			case webContent:
+				return destDir + "\\" + "WebContent";
+			case webInfo:
+				return destDir + "\\" + "WebContent\\WEB-INF";
+			default:
+				return "";
+		}
+	}
+
+	private String getTemplateDir() {
+		if (this.config.type == ProjectType.application)
+			return getTemplateApplicationDir();
+		else if (this.config.type == ProjectType.web)
+			return getTemplateWebDir();
+		return "";
+	}
+
+	/**
+	 * application模板目录
+	 * 
+	 * @return
+	 */
+	private String getTemplateApplicationDir() {
+		return getDir() + "\\resource\\template\\application-model";
+	}
+
+	/**
+	 * web模板目录
+	 * 
+	 * @return
+	 */
+	private String getTemplateWebDir() {
+		return getDir() + "\\resource\\template\\web-model";
+	}
+
+	/** 项目根目录 */
+	private String getDir() {
+		return new File(execPath).getParent();
+	}
+
+}

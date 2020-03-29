@@ -1,0 +1,68 @@
+package com;
+
+import java.io.*;
+
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+
+public class Main {
+	private static final String execPath = getJarFilePath();
+
+	public static void main(String[] args) throws Exception {
+//		File configFile = getSelectedConfig();
+//		if (configFile == null) throw new Exception("未选择配置文件");
+		//test
+		String path = "G:\\holiday\\CodeLibrary\\java\\project-generate\\runtest\\config.json";
+		File configFile = new File(path);
+		//end
+		String configStr = FileUtil.read(configFile);
+		System.out.println("configStr xxx:");
+		System.out.println(configStr);
+		Config config = Config.from(configStr);
+		new ProjectMaker(execPath, config).make();
+	}
+
+	/**
+	 * 选择配置文件
+	 * 
+	 * @return
+	 */
+	private static File getSelectedConfig() {
+		JFileChooser jfc = new JFileChooser();
+		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		jfc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+			public boolean accept(File file) {
+				if (file.getName().endsWith(".json") || file.isDirectory()) {
+					return true;
+				}
+				return false;
+			}
+
+			public String getDescription() {
+				return ".json配置文件";
+			}
+		});
+		jfc.showDialog(new JLabel(), "选择配置文件");
+		File file = jfc.getSelectedFile();
+		return file;
+	}
+
+	/**
+	 * 获取执行jar或class文件绝对路径
+	 * 
+	 * @return
+	 */
+	private static String getJarFilePath() {
+		String filePath = "";
+		try {
+			filePath = Main.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+			filePath = java.net.URLDecoder.decode(filePath, "UTF-8");
+			filePath = filePath.substring(0, filePath.lastIndexOf("/"));
+		} catch (Exception e) {
+			System.out.println("getJarFilePath err :" + e.getMessage());
+			e.printStackTrace();
+		}
+		return filePath;
+	}
+
+}

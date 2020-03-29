@@ -1,0 +1,4 @@
+start
+Rem cd ../bin
+Rem jar cvf ../build/jar/deploy.jar *
+Rem jar cvf ../build/jar/deploy.jar *

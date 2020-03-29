@@ -1,0 +1,88 @@
+package com;
+
+import java.util.Map;
+import java.util.function.Function;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+/**
+ * 生成工程类型 web,application
+ */
+enum ProjectType {
+	web, application
+}
+
+/**
+ * 配置信息
+ * 
+ * @author User
+ *
+ */
+public class Config {
+
+	// 项目名
+	String name;
+
+	// 生成工程类型 application,web
+	ProjectType type = ProjectType.web;
+
+	// 项目目录
+	String projectDir;
+
+	// 生成目录
+	String destDir;
+
+	// 项目结构映射
+	ProjectStructureMap structureMap;
+
+	public Config() {
+
+	}
+
+	/**
+	 * config字符串转对象
+	 * 
+	 * @param configStr
+	 * @return
+	 * @throws Exception
+	 */
+	public static Config from(String configStr) throws Exception {
+		Map<String, Object> map = new Gson().fromJson(configStr, new TypeToken<Map<String, Object>>() {
+		}.getType());
+		Config config = new Config();
+		config.name = (String) map.get("name");
+		config.type = ProjectType.valueOf((String) map.get("type"));
+		config.projectDir = (String) map.get("dir");
+		config.destDir = (String) map.get("dest");
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map2 = (Map<String, Object>) map.get("structureMap");
+		ProjectStructureMap structureMap = new ProjectStructureMap();
+		// 转绝对路径
+		Function<String, String> toPath = (str) -> config.projectDir + "\\" + str;
+		String src = toPath.apply((String) map2.get("src"));
+		if (!FileUtil.exists(src))
+			throw new Exception("src路径不存在");
+		structureMap.src = src;
+
+		String lib = toPath.apply((String) map2.get("lib"));
+		if (!FileUtil.exists(lib))
+			throw new Exception("lib路径不存在");
+		structureMap.lib = lib;
+
+		String WebContent = toPath.apply((String) map2.get("WebContent"));
+		if (!FileUtil.exists(WebContent))
+			throw new Exception("WebContent路径不存在");
+		structureMap.webContent = WebContent;
+
+		String webInfo = toPath.apply((String) map2.get("WEB-INF"));
+		if (!FileUtil.exists(webInfo))
+			throw new Exception("webInfo路径不存在");
+		structureMap.webInfo = webInfo;
+
+		config.structureMap = structureMap;
+		return config;
+	}
+
+}

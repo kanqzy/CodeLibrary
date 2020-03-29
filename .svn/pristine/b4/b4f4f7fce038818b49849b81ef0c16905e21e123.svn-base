@@ -1,0 +1,13 @@
+{
+    "name":"myweb",
+    "type":"web",
+    "dir":"G:\\holiday\\CodeLibrary\\java\\project-generate\\runtest\\myweb",
+    "dest":"G:\\holiday\\CodeLibrary\\java\\project-generate\\runtest\\eclipse",
+    "ide":"eclipse",
+    "structureMap":{
+        "src":"src",
+        "lib":"lib",
+        "WebContent":"pages",
+        "WEB-INF":"config"
+    }
+}

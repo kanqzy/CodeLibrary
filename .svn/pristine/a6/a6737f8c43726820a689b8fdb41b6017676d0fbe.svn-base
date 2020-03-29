@@ -1,0 +1,78 @@
+package com;
+
+import java.util.*;
+import java.io.*;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+public class Main {
+
+	public static void main(String[] args) throws Exception {
+		String execPath = getJarFilePath();
+		String webDir = "E:\\holiday\\eclipse\\workspace\\exercise\\web\\WebContent";
+		String deployDir = "E:\\holiday\\eclipse\\workspace\\exercise\\apache-tomcat-8.5.51\\webapps\\web";
+		deploy(execPath, webDir, deployDir);
+	}
+
+	public static void deploy(String execPath, String webDir, String deployDir) throws Exception {
+		// 遍历文件夹生成当前清单
+		List<FileInfo> fileList = new ArrayList<>();
+		FileUtil.makeFileList(fileList, webDir);
+		// 读取清单文件
+		String fileListPath = execPath + "//" + "fileList.json";
+		if (!new File(deployDir).exists()) {
+			FileUtil.copy(webDir, deployDir);
+		} else {		
+			if (!new File(fileListPath).exists()) {
+				new File(deployDir).delete();
+				FileUtil.copy(webDir, deployDir);
+			} else {
+				String jsonStr = FileUtil.read(fileListPath);
+				List<FileInfo> lastFileList = new Gson().fromJson(jsonStr, new TypeToken<List<FileInfo>>() {
+				}.getType());
+				Comparsion comparsion = Comparsion.compare(fileList, lastFileList);
+				// 复制覆盖
+				List<String> copys = new ArrayList<String>();
+				copys.addAll(comparsion.adds);
+				copys.addAll(comparsion.changes);
+				for (String path : copys) {
+					String newPath = path.replace(webDir, deployDir);
+					if (new File(path).isDirectory())
+						new File(newPath).mkdir();
+					else {
+						FileUtil.copyFile(path, newPath);
+					}
+				}
+				// 删除
+				List<String> dels = comparsion.dels;
+				for (String path : dels) {
+					String newPath = path.replace(webDir, deployDir);
+					new File(newPath).delete();
+				}
+			}
+		}
+		// 当前清单写入json文件
+		FileUtil.write(fileListPath, new Gson().toJson(fileList));
+		System.out.println("deploy finish ...");
+
+	}
+
+	/**
+	 * 获取jar包class路径
+	 * 
+	 * @return
+	 */
+	public static String getJarFilePath() {
+		String filePath = "";
+		try {
+			filePath = Main.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+			filePath = java.net.URLDecoder.decode(filePath, "UTF-8");
+			filePath = filePath.substring(0, filePath.lastIndexOf("/"));
+		} catch (Exception e) {
+			System.out.println("getJarFilePath err :" + e.getMessage());
+			e.printStackTrace();
+		}
+		return filePath;
+	}
+}

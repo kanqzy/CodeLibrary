@@ -1,0 +1,54 @@
+package com;
+
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+
+/**
+ * 项目结构
+ */
+enum ProjectStructureType {
+	src,lib,webContent,webInfo
+}
+
+/**
+ * 项目结构映射
+ * @author User
+ *
+ */
+public class ProjectStructureMap {
+	
+	String src;
+	String lib;
+	String webContent;
+	String webInfo;
+	
+	public ProjectStructureMap() {
+		
+	}
+
+	public ProjectStructureMap(String src, String lib, String webContent, String webInfo) {
+		this.src = src;
+		this.lib = lib;
+		this.webContent = webContent;
+		this.webInfo = webInfo;
+	}
+
+	public static ProjectStructureMap getDefault() {	
+		return new ProjectStructureMap("src", "lib", "webContent", "web.xml");
+	}
+	
+	public static ProjectStructureMap from(String structureMapStr) {
+		Map<String, Object> map = new Gson().fromJson(structureMapStr, new TypeToken<Map<String, Object>>() {
+		}.getType());
+		ProjectStructureMap structureMap = new ProjectStructureMap();
+		structureMap.src = (String)map.get("src");
+		structureMap.lib = (String)map.get("lib");
+		structureMap.webContent = (String)map.get("WebContent");
+		structureMap.webInfo = (String)map.get("WEB-INF");
+		return structureMap;
+	}
+	
+}
